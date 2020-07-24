@@ -1,0 +1,9 @@
+[package]
+name = "creek"
+version = "0.1.0"
+authors = ["findus11 <findusxi@protonmail.com>"]
+license-file = "LICENSE"
+edition = "2018"
+
+[dependencies]
+fnv = { version = "1.0", optional = true }
