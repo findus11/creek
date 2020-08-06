@@ -114,30 +114,33 @@ where
         let first = Sort::get_first(graph);
         self.infos.insert(first, self.first_fact.clone());
 
+        // Initialize worklist
         let mut worklist = VecDeque::new();
-        worklist.push_back(first);
+        for id in graph.get_all() {
+            worklist.push_back(id);
+        }
 
         while let Some(id) = worklist.pop_front() {
             let node = graph.get(id);
-
+            
             // Solve new info
             let joined = self.solve_joins(node);
             let transd = (&mut self.trans)(node, joined.clone());
-
+            
             // Get previous info
             let info = self.infos.entry(id).or_insert(self.init_fact.clone());
             let prev_trans = Sort::get_trans_fact(info);
-
+            
             if prev_trans != &transd {
                 for dirty in Sort::get_nexts(node) {
-                    if !worklist.contains(dirty) {
-                        worklist.push_back(*dirty);
-                    }
+                    worklist.push_back(*dirty);
                 }
             }
+
+            Sort::assign(info, joined, transd);
         }
 
-        self.infos.clone()
+        self.infos.drain().collect()
     }
 
     /// Solve the joins for a block

@@ -1,6 +1,9 @@
 use super::{Fact, Graph, Node, NodeInfo};
 
 pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
+    /// Assign the `joined` and `transd` facts to a `NodeInfo`
+    fn assign(info: &mut NodeInfo<F>, joined: F, transd: F);
+    
     /// Get the `NodeId`s for the nodes that need to be analyzed after this. In
     /// a forwards problem, this corresponds to a node's successors.
     fn get_nexts(node: &N) -> &[N::NodeId];
@@ -12,10 +15,13 @@ pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
     /// Get the node id for which the `first` fact holds true. In a forwards
     /// problem, this is the entry node.
     fn get_first(graph: &G) -> N::NodeId;
-
+    
     /// Get the fact which is to be joined. In a forwards problem, this is the
     /// `after` fact
     fn get_join_fact(info: &NodeInfo<F>) -> &F;
+    
+    /// Get the last node, In a forwards problem, this is the exit node.
+    fn get_last(graph: &G) -> N::NodeId;
 
     /// Get the fact which is to be transformed. In a forwards problem, this is
     /// the `before` fact
@@ -32,6 +38,11 @@ where
     N: Node,
     G: Graph<N>,
 {
+    fn assign(info: &mut NodeInfo<F>, joined: F, transd: F) {
+        info.before = joined;
+        info.after = transd;
+    }
+
     fn get_nexts(node: &N) -> &[N::NodeId] {
         node.get_succs()
     }
@@ -42,6 +53,10 @@ where
 
     fn get_first(graph: &G) -> N::NodeId {
         graph.get_entry()
+    }
+
+    fn get_last(graph: &G) -> N::NodeId {
+        graph.get_exit()
     }
 
     fn get_join_fact(info: &NodeInfo<F>) -> &F {
@@ -63,6 +78,11 @@ where
     N: Node,
     G: Graph<N>,
 {
+    fn assign(info: &mut NodeInfo<F>, joined: F, transd: F) {
+        info.before = transd;
+        info.after = joined;
+    }
+
     fn get_nexts(node: &N) -> &[N::NodeId] {
         node.get_preds()
     }
@@ -73,6 +93,10 @@ where
 
     fn get_first(graph: &G) -> N::NodeId {
         graph.get_exit()
+    }
+
+    fn get_last(graph: &G) -> N::NodeId {
+        graph.get_entry()
     }
 
     fn get_join_fact(info: &NodeInfo<F>) -> &F {

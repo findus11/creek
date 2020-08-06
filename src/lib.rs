@@ -18,6 +18,9 @@ pub trait Graph<N: Node> {
     /// `get_exit`, or a node returned by `get`'s predecessors or successors.
     fn get(&self, id: N::NodeId) -> &N;
 
+    /// Get all nodes in this graph
+    fn get_all(&self) -> Vec<N::NodeId>;
+
     /// Get the entry node
     fn get_entry(&self) -> N::NodeId;
 
@@ -43,7 +46,7 @@ pub trait Node {
 
 /// The information which holds true at the `in` and `out` points of a
 /// particular node
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct NodeInfo<F: Fact> {
     pub before: F,
     pub after: F,
