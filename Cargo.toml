@@ -6,4 +6,4 @@ license-file = "LICENSE"
 edition = "2018"
 
 [dependencies]
-fnv = { version = "1.0", optional = true }
+fnv = "1.0"

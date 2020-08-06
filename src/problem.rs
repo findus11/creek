@@ -1,77 +1,92 @@
-//use super::{Fact, Node};
+use super::{Fact, Graph, Node, NodeInfo};
 
-//pub(crate) trait Problem {}
+pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
+    /// Get the `NodeId`s for the nodes that need to be analyzed after this. In
+    /// a forwards problem, this corresponds to a node's successors.
+    fn get_nexts(node: &N) -> &[N::NodeId];
 
+    /// Get the `NodeId`s for the nodes whose facts are to be joined together.
+    /// In a forwards problem, this corresponds to a node's predecessors.
+    fn get_joins(node: &N) -> &[N::NodeId];
+
+    /// Get the node id for which the `first` fact holds true. In a forwards
+    /// problem, this is the entry node.
+    fn get_first(graph: &G) -> N::NodeId;
+
+    /// Get the fact which is to be joined. In a forwards problem, this is the
+    /// `after` fact
+    fn get_join_fact(info: &NodeInfo<F>) -> &F;
+
+    /// Get the fact which is to be transformed. In a forwards problem, this is
+    /// the `before` fact
+    fn get_trans_fact(info: &NodeInfo<F>) -> &F;
+}
+
+/// A forwards problem finds information which holds on all paths from `enter`
+/// to `n` for all nodes `n`. Forward problems are often (but not always)
+/// problems where all facts *must* be true
 pub struct Forward;
-//impl Problem for Forward {}
-
-pub struct Backward;
-//impl Problem for Backward {}
-
-
-/*
-pub struct ForwardProblem<F, N, Trans, Join>
+impl<F, N, G> Problem<F, N, G> for Forward
 where
     F: Fact,
     N: Node,
-    Trans: FnMut(&N, F) -> F,
-    Join: FnMut(Vec<F>) -> F,
+    G: Graph<N>,
 {
-    /// Initial fact for entry node
-    pub(crate) entry: F,
-    
-    /// Initial fact for all non-entry nodes. For all facts `f`, `join(f, init)` 
-    /// should equal `f`
-    pub(crate) init: F,
+    fn get_nexts(node: &N) -> &[N::NodeId] {
+        node.get_succs()
+    }
 
-    /// The transition function computes the `after` fact for a node in terms of 
-    /// its `before` fact
-    pub(crate) trans: Trans,
+    fn get_joins(node: &N) -> &[N::NodeId] {
+        node.get_preds()
+    }
 
-    /// The join function computes the `before` fact for a node in terms of its
-    /// predecessors' `after` facts
-    pub(crate) join: Join,
+    fn get_first(graph: &G) -> N::NodeId {
+        graph.get_entry()
+    }
 
-    _n: std::marker::PhantomData<N>,
-}
+    fn get_join_fact(info: &NodeInfo<F>) -> &F {
+        &info.after
+    }
 
-impl<F, N, Trans, Join> ForwardProblem<F, N, Trans, Join>
-where 
-    F: Fact,
-    N: Node,
-    Trans: FnMut(&N, F) -> F,
-    Join: FnMut(Vec<F>) -> F,
-{
-    /// Create a new forwards problem. `entry` gives the initial fact true for
-    /// the entry node, `init` gives the initial fact for all other nodes, 
-    /// `trans` calculates the `after` fact in terms of a node and its `before` 
-    /// fact, and `join` calculates the `before` fact in terms of all of its 
-    /// predecessors' `after` facts
-    pub fn new(entry: F, init: F, trans: Trans, join: Join) -> Self {
-        Self {
-            entry,
-            init,
-            trans,
-            join,
-            _n: std::marker::PhantomData,
-        }
+    fn get_trans_fact(info: &NodeInfo<F>) -> &F {
+        &info.before
     }
 }
 
-impl<F, N, Trans, Join> Problem for ForwardProblem<F, N, Trans, Join>
-where 
-    F: Fact, 
-    N: Node,
-    Trans: FnMut(&N, F) -> F,
-    Join: FnMut(Vec<F>) -> F,
-{
-}
-
-
-pub struct BackwardProblem<F, N, Trans, Join>
+/// A backwards problem finds information which holds on all paths from `n` to
+/// `exit` for all nodes `n`. Backward problems are often (but not always)
+/// problems where facts *may* be true
+pub struct Backward;
+impl<F, N, G> Problem<F, N, G> for Backward
 where
     F: Fact,
     N: Node,
-    Trans: FnMut(&N, F) -> F,
-    Join: FnMut
-*/
+    G: Graph<N>,
+{
+    fn get_nexts(node: &N) -> &[N::NodeId] {
+        node.get_preds()
+    }
+
+    fn get_joins(node: &N) -> &[N::NodeId] {
+        node.get_preds()
+    }
+
+    fn get_first(graph: &G) -> N::NodeId {
+        graph.get_exit()
+    }
+
+    fn get_join_fact(info: &NodeInfo<F>) -> &F {
+        &info.before
+    }
+
+    fn get_trans_fact(info: &NodeInfo<F>) -> &F {
+        &info.after
+    }
+}
+
+mod private {
+    /// Disallows downstream implementations of `Problem`
+    pub trait Sealed {}
+    impl Sealed for super::Forward {}
+    impl Sealed for super::Backward {}
+}
