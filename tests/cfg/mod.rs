@@ -95,10 +95,6 @@ impl Graph<Block> for NodeGraph {
         self.blocks.get(&id).unwrap()
     }
 
-    fn get_all(&self) -> Vec<BlockId> {
-        self.blocks.keys().cloned().collect()
-    }
-
     fn get_entry(&self) -> BlockId {
         self.entry
     }

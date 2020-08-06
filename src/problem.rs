@@ -19,9 +19,6 @@ pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
     /// Get the fact which is to be joined. In a forwards problem, this is the
     /// `after` fact
     fn get_join_fact(info: &NodeInfo<F>) -> &F;
-    
-    /// Get the last node, In a forwards problem, this is the exit node.
-    fn get_last(graph: &G) -> N::NodeId;
 
     /// Get the fact which is to be transformed. In a forwards problem, this is
     /// the `before` fact
@@ -55,10 +52,6 @@ where
         graph.get_entry()
     }
 
-    fn get_last(graph: &G) -> N::NodeId {
-        graph.get_exit()
-    }
-
     fn get_join_fact(info: &NodeInfo<F>) -> &F {
         &info.after
     }
@@ -88,15 +81,11 @@ where
     }
 
     fn get_joins(node: &N) -> &[N::NodeId] {
-        node.get_preds()
+        node.get_succs()
     }
 
     fn get_first(graph: &G) -> N::NodeId {
         graph.get_exit()
-    }
-
-    fn get_last(graph: &G) -> N::NodeId {
-        graph.get_entry()
     }
 
     fn get_join_fact(info: &NodeInfo<F>) -> &F {

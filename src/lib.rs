@@ -18,9 +18,6 @@ pub trait Graph<N: Node> {
     /// `get_exit`, or a node returned by `get`'s predecessors or successors.
     fn get(&self, id: N::NodeId) -> &N;
 
-    /// Get all nodes in this graph
-    fn get_all(&self) -> Vec<N::NodeId>;
-
     /// Get the entry node
     fn get_entry(&self) -> N::NodeId;
 

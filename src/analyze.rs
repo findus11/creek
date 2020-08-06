@@ -47,8 +47,8 @@ where
     pub fn new_forward(enter: F, top: F, trans: Trans, join: Join) -> Self {
         Self {
             first_fact: NodeInfo {
-                before: top.clone(),
-                after: enter,
+                before: enter,
+                after: top.clone(),
             },
             init_fact: NodeInfo {
                 before: top.clone(),
@@ -80,8 +80,8 @@ where
     pub fn new_backward(exit: F, top: F, trans: Trans, join: Join) -> Self {
         Self {
             first_fact: NodeInfo {
-                before: exit,
-                after: top.clone(),
+                before: top.clone(),
+                after: exit,
             },
             init_fact: NodeInfo {
                 before: top.clone(),
@@ -116,9 +116,7 @@ where
 
         // Initialize worklist
         let mut worklist = VecDeque::new();
-        for id in graph.get_all() {
-            worklist.push_back(id);
-        }
+        worklist.push_back(first);
 
         while let Some(id) = worklist.pop_front() {
             let node = graph.get(id);
