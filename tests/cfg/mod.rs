@@ -1,17 +1,17 @@
-//! A simple control flow graph. A `NodeGraph` consists of one or more blocks, 
+//! A simple control flow graph. A `NodeGraph` consists of one or more blocks,
 //! each of which consists of multiple statements. Each statement is either a
 //! constant assignment, like `x = 5`, or a variable assignment, like `x = a`.
 
 pub mod macros;
 
 use creek::{Graph, Node};
-use fnv::{FnvHashMap};
+use fnv::FnvHashMap;
 
 /// A variable with a unique id
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Variable(pub usize);
 
-/// A simple statement, which is either a constant assignment (`x = 5`) or a 
+/// A simple statement, which is either a constant assignment (`x = 5`) or a
 /// variable assignment (`x = a`)
 #[derive(Debug)]
 pub enum Statement {

@@ -2,7 +2,7 @@
 macro_rules! block {
     (($v:literal = var $w:literal )) => {
         $crate::cfg::Statement::VarAssign(
-            $crate::cfg::Variable($v), 
+            $crate::cfg::Variable($v),
             $crate::cfg::Variable($w)
         )
     };

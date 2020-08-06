@@ -120,18 +120,20 @@ where
 
         while let Some(id) = worklist.pop_front() {
             let node = graph.get(id);
-            
+
             // Solve new info
             let joined = self.solve_joins(node);
             let transd = (&mut self.trans)(node, joined.clone());
-            
+
             // Get previous info
             let info = self.infos.entry(id).or_insert(self.init_fact.clone());
-            let prev_trans = Sort::get_trans_fact(info);
-            
+            let prev_trans = Sort::get_join_fact(info);
+
             if prev_trans != &transd {
                 for dirty in Sort::get_nexts(node) {
-                    worklist.push_back(*dirty);
+                    if !worklist.contains(dirty) {
+                        worklist.push_back(*dirty);
+                    }
                 }
             }
 

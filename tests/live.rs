@@ -9,8 +9,8 @@
 
 mod cfg;
 
-use creek::{Analyzer, Fact, NodeInfo};
 use cfg::*;
+use creek::{Analyzer, Fact, NodeInfo};
 use fnv::FnvHashSet;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -20,9 +20,7 @@ struct LivenessFact {
 
 impl LivenessFact {
     fn new(live: FnvHashSet<Variable>) -> Self {
-        Self {
-            live,
-        }
+        Self { live }
     }
 }
 
@@ -53,9 +51,7 @@ fn trans(block: &Block, fact: LivenessFact) -> LivenessFact {
         }
     }
 
-    LivenessFact {
-        live: used,
-    }
+    LivenessFact { live: used }
 }
 
 /// ```plain
@@ -70,11 +66,8 @@ fn join(facts: Vec<LivenessFact>) -> LivenessFact {
         }
     }
 
-    LivenessFact {
-        live: res
-    }
+    LivenessFact { live: res }
 }
-
 
 /// ```plain
 ///       +-1-----+
@@ -91,7 +84,7 @@ fn join(facts: Vec<LivenessFact>) -> LivenessFact {
 ///       +-4-----+
 ///       | d = a |
 ///       +-------+
-/// 
+///
 /// in(1)  = {}
 /// out(1) = {a, b}
 /// in(2)  = {a, b}
@@ -104,7 +97,7 @@ fn join(facts: Vec<LivenessFact>) -> LivenessFact {
 #[test]
 fn one_branch() {
     // Build graph
-    let b1 = block!{
+    let b1 = block! {
         1;
         from => ;
         to => 2, 3;
@@ -112,21 +105,21 @@ fn one_branch() {
         (1 = 1)
     };
 
-    let b2 = block!{
+    let b2 = block! {
         2;
         from => 1;
         to => 4;
         (3 = var 1)
     };
 
-    let b3 = block!{
+    let b3 = block! {
         3;
         from => 1;
         to => 4;
         (3 = var 0)
     };
 
-    let b4 = block!{
+    let b4 = block! {
         4;
         from => 2, 3;
         to => ;
@@ -138,7 +131,6 @@ fn one_branch() {
     graph.insert(b3);
     graph.insert_exit(b4);
 
-
     // Analyze
     let top = LivenessFact {
         live: FnvHashSet::default(),
@@ -147,7 +139,6 @@ fn one_branch() {
 
     let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
     let res = analyzer.solve(&graph);
-
 
     // Compare
     let expected = dict![
@@ -165,6 +156,89 @@ fn one_branch() {
         },
         BlockId(4) => NodeInfo {
             before: LivenessFact::new(set![Variable(0)]),
+            after: LivenessFact::new(set![]),
+        }
+    ];
+
+    assert_eq!(expected, res);
+}
+
+/// ```plain
+/// +-1-----+
+/// | a = 0 |
+/// +-------+
+///     |
+///     v      
+/// +-2-----+  
+/// | b = 1 |<-+
+/// | c = a |  |
+/// +-------+  |
+///   |   |    |
+///   |   +----+
+///   v
+/// +-3-----+
+/// | d = a |
+/// | e = b |
+/// +-------+
+///
+/// in(1)  = {}
+/// out(1) = {a}
+/// in(2)  = {a}
+/// out(2) = {a, b}
+/// in(3)  = {a, b}
+/// out(3) = {}
+/// ```
+#[test]
+fn one_loop() {
+    // Build graph
+    let b1 = block! {
+        1;
+        from => ;
+        to => 2;
+        (0 = 0)
+    };
+
+    let b2 = block! {
+        2;
+        from => 1, 2;
+        to => 2, 3;
+        (1 = 1);
+        (2 = var 0)
+    };
+
+    let b3 = block! {
+        3;
+        from => 2;
+        to => ;
+        (3 = var 0);
+        (4 = var 1)
+    };
+
+    let mut graph = NodeGraph::new(b1);
+    graph.insert(b2);
+    graph.insert_exit(b3);
+
+    // Analyze
+    let top = LivenessFact {
+        live: FnvHashSet::default(),
+    };
+    let exit = top.clone();
+
+    let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
+    let res = analyzer.solve(&graph);
+
+    // Compare
+    let expected = dict![
+        BlockId(1) => NodeInfo {
+            before: LivenessFact::new(set![]),
+            after: LivenessFact::new(set![Variable(0)]),
+        },
+        BlockId(2) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0)]),
+            after: LivenessFact::new(set![Variable(0), Variable(1)]),
+        },
+        BlockId(3) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0), Variable(1)]),
             after: LivenessFact::new(set![]),
         }
     ];
