@@ -6,6 +6,9 @@
 //! trans(b) = union(gen(b), in(b) - kill(b))
 //! join = union
 //! ```
+//! 
+//! where `gen(b)` gives the variables used, and `kill(b)` gives the variables
+//! reassigned.
 
 mod cfg;
 
@@ -35,6 +38,7 @@ fn trans(block: &Block, fact: LivenessFact) -> LivenessFact {
 
     for stmt in block.stmts.iter() {
         match stmt {
+            Statement::Declare(_) => { }
             Statement::ConstAssign(var, _) => {
                 killed.insert(*var);
             }

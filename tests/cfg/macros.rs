@@ -1,5 +1,11 @@
 #[macro_export]
 macro_rules! block {
+    ((var $v:literal)) => {
+        $crate::cfg::Statement::Declare(
+            $crate::cfg::Variable($v)
+        )
+    };
+
     (($v:literal = var $w:literal )) => {
         $crate::cfg::Statement::VarAssign(
             $crate::cfg::Variable($v),

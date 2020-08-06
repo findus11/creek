@@ -15,6 +15,7 @@ pub struct Variable(pub usize);
 /// variable assignment (`x = a`)
 #[derive(Debug)]
 pub enum Statement {
+    Declare(Variable),
     ConstAssign(Variable, i32),
     VarAssign(Variable, Variable),
 }
