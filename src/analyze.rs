@@ -126,7 +126,8 @@ where
             let transd = (&mut self.trans)(node, joined.clone());
 
             // Get previous info
-            let info = self.infos.entry(id).or_insert(self.init_fact.clone());
+            let init_fact = self.init_fact.clone();
+            let info = self.infos.entry(id).or_insert(init_fact);
             let prev_trans = Sort::get_join_fact(info);
 
             if prev_trans != &transd {
@@ -148,7 +149,8 @@ where
         let mut infos = Vec::new();
 
         for next in Sort::get_joins(graph, node_id) {
-            let next_info = self.infos.entry(*next).or_insert(self.init_fact.clone());
+            let init_fact = self.init_fact.clone();
+            let next_info = self.infos.entry(*next).or_insert(init_fact);
             infos.push(Sort::get_join_fact(next_info).clone());
         }
 
