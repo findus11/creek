@@ -23,6 +23,12 @@ pub trait Graph<N: Node> {
 
     /// Get the exit node
     fn get_exit(&self) -> N::NodeId;
+
+    /// Get the predecessor nodes for a given node
+    fn get_preds(&self, node: N::NodeId) -> &[N::NodeId];
+
+    /// Get the successor nodes for a given node
+    fn get_succs(&self, node: N::NodeId) -> &[N::NodeId];
 }
 
 /// A node in a directed graph can have predecessors, which are other nodes that
@@ -31,14 +37,8 @@ pub trait Graph<N: Node> {
 ///
 /// Nodes are uniquely identified by a `NodeId`.
 pub trait Node {
-    /// A small value used to uniquely implement
+    /// A small value used to uniquely identify a node
     type NodeId: Copy + Eq + Hash;
-
-    /// Get the predecessors for this node
-    fn get_preds(&self) -> &[Self::NodeId];
-
-    /// Get the successors for this node
-    fn get_succs(&self) -> &[Self::NodeId];
 }
 
 /// The information which holds true at the `in` and `out` points of a

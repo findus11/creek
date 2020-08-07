@@ -37,14 +37,6 @@ pub struct Block {
 
 impl Node for Block {
     type NodeId = BlockId;
-
-    fn get_preds(&self) -> &[Self::NodeId] {
-        &self.preds
-    }
-
-    fn get_succs(&self) -> &[Self::NodeId] {
-        &self.succs
-    }
 }
 
 pub struct NodeGraph {
@@ -104,5 +96,13 @@ impl Graph<Block> for NodeGraph {
 
     fn get_exit(&self) -> BlockId {
         self.exit
+    }
+
+    fn get_preds(&self, id: BlockId) -> &[BlockId] {
+        &self.get(id).preds
+    }
+
+    fn get_succs(&self, id: BlockId) -> &[BlockId] {
+        &self.get(id).succs
     }
 }

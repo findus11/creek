@@ -6,11 +6,11 @@ pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
 
     /// Get the `NodeId`s for the nodes that need to be analyzed after this. In
     /// a forwards problem, this corresponds to a node's successors.
-    fn get_nexts(node: &N) -> &[N::NodeId];
+    fn get_nexts(graph: &G, node: N::NodeId) -> &[N::NodeId];
 
     /// Get the `NodeId`s for the nodes whose facts are to be joined together.
     /// In a forwards problem, this corresponds to a node's predecessors.
-    fn get_joins(node: &N) -> &[N::NodeId];
+    fn get_joins(graph: &G, node: N::NodeId) -> &[N::NodeId];
 
     /// Get the node id for which the `first` fact holds true. In a forwards
     /// problem, this is the entry node.
@@ -38,12 +38,12 @@ where
         info.after = transd;
     }
 
-    fn get_nexts(node: &N) -> &[N::NodeId] {
-        node.get_succs()
+    fn get_nexts(graph: &G, node: N::NodeId) -> &[N::NodeId] {
+        graph.get_succs(node)
     }
 
-    fn get_joins(node: &N) -> &[N::NodeId] {
-        node.get_preds()
+    fn get_joins(graph: &G, node: N::NodeId) -> &[N::NodeId] {
+        graph.get_preds(node)
     }
 
     fn get_first(graph: &G) -> N::NodeId {
@@ -70,12 +70,12 @@ where
         info.after = joined;
     }
 
-    fn get_nexts(node: &N) -> &[N::NodeId] {
-        node.get_preds()
+    fn get_nexts(graph: &G, node: N::NodeId) -> &[N::NodeId] {
+        graph.get_preds(node)
     }
 
-    fn get_joins(node: &N) -> &[N::NodeId] {
-        node.get_succs()
+    fn get_joins(graph: &G, node: N::NodeId) -> &[N::NodeId] {
+        graph.get_succs(node)
     }
 
     fn get_first(graph: &G) -> N::NodeId {

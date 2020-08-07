@@ -122,7 +122,7 @@ where
             let node = graph.get(id);
 
             // Solve new info
-            let joined = self.solve_joins(node);
+            let joined = self.solve_joins(graph, id);
             let transd = (&mut self.trans)(node, joined.clone());
 
             // Get previous info
@@ -130,7 +130,7 @@ where
             let prev_trans = Sort::get_join_fact(info);
 
             if prev_trans != &transd {
-                for dirty in Sort::get_nexts(node) {
+                for dirty in Sort::get_nexts(graph, id) {
                     if !worklist.contains(dirty) {
                         worklist.push_back(*dirty);
                     }
@@ -143,11 +143,11 @@ where
         self.infos.drain().collect()
     }
 
-    /// Solve the joins for a block
-    fn solve_joins(&mut self, node: &N) -> F {
+    /// Solve the joins for a node
+    fn solve_joins(&mut self, graph: &G, node_id: N::NodeId) -> F {
         let mut infos = Vec::new();
 
-        for next in Sort::get_joins(node) {
+        for next in Sort::get_joins(graph, node_id) {
             let next_info = self.infos.entry(*next).or_insert(self.init_fact.clone());
             infos.push(Sort::get_join_fact(next_info).clone());
         }
