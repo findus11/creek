@@ -1,10 +1,13 @@
 mod analyze;
+mod hash;
 mod problem;
 
 pub use analyze::Analyzer;
+pub use hash::HashMap;
 pub use problem::{Backward, Forward};
 
 use std::hash::Hash;
+
 
 /// A fact represents a piece of information known to be true at a particular
 /// point in the graph. In a constant propagation problem, for instance, a fact

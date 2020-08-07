@@ -5,5 +5,9 @@ authors = ["findus11 <findusxi@protonmail.com>"]
 license-file = "LICENSE"
 edition = "2018"
 
+[features]
+default = ["fnv"]
+no-deps = []
+
 [dependencies]
-fnv = "1.0"
+fnv = { version = "1.0", optional = true }

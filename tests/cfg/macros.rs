@@ -44,11 +44,11 @@ macro_rules! set {
 #[macro_export]
 macro_rules! dict {
     [] => {
-        fnv::FnvHashMap::default()
+        creek::HashMap::default()
     };
 
     [$( $k:expr => $v:expr ),+] => {{
-        let mut res = fnv::FnvHashMap::default();
+        let mut res = creek::HashMap::default();
         $( res.insert($k, $v) );*;
         res
     }}

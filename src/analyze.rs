@@ -1,6 +1,6 @@
-use fnv::FnvHashMap;
 use std::collections::VecDeque;
 
+use super::HashMap;
 use super::problem::{Backward, Forward, Problem};
 use super::{Fact, Graph, Node, NodeInfo};
 
@@ -26,7 +26,7 @@ where
     /// Join function which joins multiple facts
     join: Join,
 
-    infos: FnvHashMap<N::NodeId, NodeInfo<F>>,
+    infos: HashMap<N::NodeId, NodeInfo<F>>,
 
     _graph: std::marker::PhantomData<G>,
     _node: std::marker::PhantomData<N>,
@@ -57,7 +57,7 @@ where
             trans,
             join,
 
-            infos: FnvHashMap::default(),
+            infos: HashMap::default(),
 
             _graph: std::marker::PhantomData,
             _node: std::marker::PhantomData,
@@ -100,7 +100,7 @@ where
             trans,
             join,
 
-            infos: FnvHashMap::default(),
+            infos: HashMap::default(),
 
             _graph: std::marker::PhantomData,
             _node: std::marker::PhantomData,
@@ -128,7 +128,7 @@ where
     Join: FnMut(Vec<F>) -> F,
     Sort: Problem<F, N, G>,
 {
-    pub fn solve(&mut self, graph: &G) -> FnvHashMap<N::NodeId, NodeInfo<F>> {
+    pub fn solve(&mut self, graph: &G) -> HashMap<N::NodeId, NodeInfo<F>> {
         // Initialize info map
         self.infos.clear();
         let first = Sort::get_first(graph);
