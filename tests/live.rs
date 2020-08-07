@@ -139,9 +139,8 @@ fn one_branch() {
     let top = LivenessFact {
         live: FnvHashSet::default(),
     };
-    let exit = top.clone();
 
-    let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
+    let mut analyzer = Analyzer::new_backward(top, trans, join);
     let res = analyzer.solve(&graph);
 
     // Compare
@@ -226,9 +225,8 @@ fn one_loop() {
     let top = LivenessFact {
         live: FnvHashSet::default(),
     };
-    let exit = top.clone();
 
-    let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
+    let mut analyzer = Analyzer::new_backward(top, trans, join);
     let res = analyzer.solve(&graph);
 
     // Compare
@@ -393,9 +391,8 @@ fn branch_and_loop() {
     let top = LivenessFact {
         live: FnvHashSet::default(),
     };
-    let exit = top.clone();
 
-    let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
+    let mut analyzer = Analyzer::new_backward(top, trans, join);
     let res = analyzer.solve(&graph);
 
     // Compare

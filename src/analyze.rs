@@ -44,10 +44,10 @@ where
     /// Create a new forwards problem with the given entry fact, init fact,
     /// transformation function and join function. `top` should have the
     /// property that `join(vec![f, top]) == f` for all facts `f`
-    pub fn new_forward(enter: F, top: F, trans: Trans, join: Join) -> Self {
+    pub fn new_forward(top: F, trans: Trans, join: Join) -> Self {
         Self {
             first_fact: NodeInfo {
-                before: enter,
+                before: top.clone(),
                 after: top.clone(),
             },
             init_fact: NodeInfo {
@@ -64,6 +64,16 @@ where
             _sort: std::marker::PhantomData,
         }
     }
+
+    pub fn with_entry_fact(self, enter: F) -> Self {
+        Self {
+            first_fact: NodeInfo {
+                before: enter,
+                after: self.first_fact.after,
+            },
+            ..self
+        }
+    }
 }
 
 impl<F, N, G, Trans, Join> Analyzer<F, N, G, Trans, Join, Backward>
@@ -77,11 +87,11 @@ where
     /// Create a new backwards problem with the given exit fact, top fact,
     /// transformation function and join function. `top` should have the
     /// property that `join(vec![f, top]) == f` for all facts `f`
-    pub fn new_backward(exit: F, top: F, trans: Trans, join: Join) -> Self {
+    pub fn new_backward(top: F, trans: Trans, join: Join) -> Self {
         Self {
             first_fact: NodeInfo {
                 before: top.clone(),
-                after: exit,
+                after: top.clone(),
             },
             init_fact: NodeInfo {
                 before: top.clone(),
@@ -95,6 +105,16 @@ where
             _graph: std::marker::PhantomData,
             _node: std::marker::PhantomData,
             _sort: std::marker::PhantomData,
+        }
+    }
+
+    pub fn with_exit_fact(self, exit: F) -> Self {
+        Self {
+            first_fact: NodeInfo {
+                before: self.first_fact.before,
+                after: exit,
+            },
+            ..self
         }
     }
 }

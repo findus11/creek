@@ -119,10 +119,9 @@ fn one_branch() {
     graph.insert_exit(b3);
 
     // Analyze
-    let enter = AssignmentFact::new(set![]);
-    let top = enter.clone();
+    let top = AssignmentFact::new(set![]);
 
-    let mut analyzer = Analyzer::new_forward(enter, top, trans, join);
+    let mut analyzer = Analyzer::new_forward(top, trans, join);
     let res = analyzer.solve(&graph);
 
     // Compare
