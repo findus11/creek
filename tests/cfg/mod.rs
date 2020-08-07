@@ -2,6 +2,8 @@
 //! each of which consists of multiple statements. Each statement is either a
 //! constant assignment, like `x = 5`, or a variable assignment, like `x = a`.
 
+#![allow(dead_code)]
+
 pub mod macros;
 
 use creek::{Graph, Node};
