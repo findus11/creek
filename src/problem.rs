@@ -17,7 +17,7 @@ pub trait Problem<F: Fact, N: Node, G: Graph<N>>: private::Sealed {
     fn get_first(graph: &G) -> N::NodeId;
 
     /// Get the fact which is computed by transformation. Note that this is not
-    /// the fact that will be transformed, but the fact that has been 
+    /// the fact that will be transformed, but the fact that has been
     /// transformed. This also gives the fact which will be `join`ed with other
     /// facts.
     fn get_join_fact(info: &NodeInfo<F>) -> &F;

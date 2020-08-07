@@ -10,7 +10,7 @@
 //! ```
 //!
 //! where `gen(b)` gives the variables which are declared, and `kill(b)` gives
-//! the variables which are defined. A variable shouldn't be declared and 
+//! the variables which are defined. A variable shouldn't be declared and
 //! defined in the same block in this system.
 
 mod cfg;
@@ -26,9 +26,7 @@ struct AssignmentFact {
 
 impl AssignmentFact {
     pub fn new(uninit: FnvHashSet<Variable>) -> Self {
-        Self {
-            uninit,
-        }
+        Self { uninit }
     }
 }
 
@@ -67,11 +65,8 @@ fn join(facts: Vec<AssignmentFact>) -> AssignmentFact {
         }
     }
 
-    AssignmentFact {
-        uninit: res,
-    }
+    AssignmentFact { uninit: res }
 }
-
 
 /// ```plain
 /// +-1-----+
@@ -98,21 +93,21 @@ fn join(facts: Vec<AssignmentFact>) -> AssignmentFact {
 #[test]
 fn one_branch() {
     // Build blocks
-    let b1 = block!{
+    let b1 = block! {
         1;
         from => ;
         to => 2, 3;
         (var 0)
     };
 
-    let b2 = block!{
+    let b2 = block! {
         2;
         from => 1;
         to => 3;
         (0 = 1)
     };
 
-    let b3 = block!{
+    let b3 = block! {
         3;
         from => 1, 2;
         to => ;
@@ -123,14 +118,12 @@ fn one_branch() {
     graph.insert(b2);
     graph.insert_exit(b3);
 
-
     // Analyze
     let enter = AssignmentFact::new(set![]);
     let top = enter.clone();
 
     let mut analyzer = Analyzer::new_forward(enter, top, trans, join);
-    let res = analyzer.solve(&mut graph);
-
+    let res = analyzer.solve(&graph);
 
     // Compare
     let expected = dict![

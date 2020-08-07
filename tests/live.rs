@@ -6,7 +6,7 @@
 //! trans(b) = union(gen(b), in(b) - kill(b))
 //! join = union
 //! ```
-//! 
+//!
 //! where `gen(b)` gives the variables used, and `kill(b)` gives the variables
 //! reassigned.
 
@@ -38,7 +38,7 @@ fn trans(block: &Block, fact: LivenessFact) -> LivenessFact {
 
     for stmt in block.stmts.iter() {
         match stmt {
-            Statement::Declare(_) => { }
+            Statement::Declare(_) => {}
             Statement::ConstAssign(var, _) => {
                 killed.insert(*var);
             }
@@ -243,6 +243,201 @@ fn one_loop() {
         },
         BlockId(3) => NodeInfo {
             before: LivenessFact::new(set![Variable(0), Variable(1)]),
+            after: LivenessFact::new(set![]),
+        }
+    ];
+
+    assert_eq!(expected, res);
+}
+
+///       +-1-----+
+///       | k = 2 |
+///       +-------+
+///        |     |
+///        v     v
+/// +-2-----+   +-3-----+
+/// | a = k |   | a = k |
+/// +-------+   +-------+
+///     |           |
+///     v           v
+/// +-4-----+   +-5-----+
+/// | x = 5 |   | x = 8 |
+/// +-------+   +-------+
+///        |     |
+///        v     v
+///       +-6-----+
+///       | k = a |<-+
+///       +-------+  |
+///         |   |    |
+///    +----+   |    |
+///    |        v    |
+///    |  +-7-----+  |
+///    |  | b = 2 |  |
+///    |  +-------+  |
+///    |      |      |
+///    |      v      |
+///    |  +-8-----+  |
+///    |  | x = a |  |
+///    |  | y = b |  |
+///    |  +-------+  |
+///    |      |      |
+///    |      v      |
+///    |  +-9-----+  |
+///    |  | k = k |  |
+///    |  +-------+  |
+///    |        |    |
+///    +----+   +----+
+///         |
+///         v
+///       +-10----+
+///       | m = a |
+///       | n = x |
+///       +-------+
+///
+/// in(1)   = {}
+/// out(1)  = {k}
+/// in(2)   = {k}
+/// out(2)  = {a}
+/// in(3)   = {k}
+/// out(3)  = {a}
+/// in(4)   = {a}
+/// out(4)  = {a, x}
+/// in(5)   = {a}
+/// out(5)  = {a, x}
+/// in(6)   = {a, x}
+/// out(6)  = {a, k, x}
+/// in(7)   = {a, k}
+/// out(7)  = {a, b, k}
+/// in(8)   = {a, b, k}
+/// out(8)  = {a, k, x}
+/// in(9)   = {a, k, x}
+/// out(9)  = {a, x}
+/// in(10)  = {a, x}
+/// out(10) = {}
+#[test]
+fn branch_and_loop() {
+    // Build blocks
+    let mut graph = NodeGraph::new(block! {
+        1;
+        from => ;
+        to => 2, 3;
+        (0 = 2)
+    });
+
+    graph.insert(block! {
+        2;
+        from => 1;
+        to => 4;
+        (1 = var 0)
+    });
+
+    graph.insert(block! {
+        3;
+        from => 1;
+        to => 5;
+        (1 = var 0)
+    });
+
+    graph.insert(block! {
+        4;
+        from => 2;
+        to => 6;
+        (2 = 5)
+    });
+
+    graph.insert(block! {
+        5;
+        from => 3;
+        to => 6;
+        (2 = 8)
+    });
+
+    graph.insert(block! {
+        6;
+        from => 4, 5, 9;
+        to => 7, 10;
+        (0 = var 1)
+    });
+
+    graph.insert(block! {
+        7;
+        from => 6;
+        to => 8;
+        (3 = 2)
+    });
+
+    graph.insert(block! {
+        8;
+        from => 7;
+        to => 9;
+        (2 = var 1);
+        (4 = var 3)
+    });
+
+    graph.insert(block! {
+        9;
+        from => 8;
+        to => 6;
+        (0 = var 0)
+    });
+
+    graph.insert_exit(block! {
+        10;
+        from => 6;
+        to => ;
+        (5 = var 1);
+        (6 = var 2)
+    });
+
+    // Analyze
+    let top = LivenessFact {
+        live: FnvHashSet::default(),
+    };
+    let exit = top.clone();
+
+    let mut analyzer = Analyzer::new_backward(exit, top, trans, join);
+    let res = analyzer.solve(&graph);
+
+    // Compare
+    let expected = dict![
+        BlockId(1) => NodeInfo {
+            before: LivenessFact::new(set![]),
+            after: LivenessFact::new(set![Variable(0)]),
+        },
+        BlockId(2) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0)]),
+            after: LivenessFact::new(set![Variable(1)]),
+        },
+        BlockId(3) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0)]),
+            after: LivenessFact::new(set![Variable(1)]),
+        },
+        BlockId(4) => NodeInfo {
+            before: LivenessFact::new(set![Variable(1)]),
+            after: LivenessFact::new(set![Variable(1), Variable(2)]),
+        },
+        BlockId(5) => NodeInfo {
+            before: LivenessFact::new(set![Variable(1)]),
+            after: LivenessFact::new(set![Variable(1), Variable(2)]),
+        },
+        BlockId(6) => NodeInfo {
+            before: LivenessFact::new(set![Variable(1), Variable(2)]),
+            after: LivenessFact::new(set![Variable(0), Variable(1), Variable(2)]),
+        },
+        BlockId(7) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0), Variable(1)]),
+            after: LivenessFact::new(set![Variable(0), Variable(1), Variable(3)]),
+        },
+        BlockId(8) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0), Variable(1), Variable(3)]),
+            after: LivenessFact::new(set![Variable(0), Variable(1), Variable(2)]),
+        },
+        BlockId(9) => NodeInfo {
+            before: LivenessFact::new(set![Variable(0), Variable(1), Variable(2)]),
+            after: LivenessFact::new(set![Variable(1), Variable(2)]),
+        },
+        BlockId(10) => NodeInfo {
+            before: LivenessFact::new(set![Variable(1), Variable(2)]),
             after: LivenessFact::new(set![]),
         }
     ];
