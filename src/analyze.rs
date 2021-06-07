@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
-use super::HashMap;
 use super::problem::{Backward, Forward, Problem};
+use super::HashMap;
 use super::{Fact, Graph, Node, NodeInfo};
 
 pub struct Analyzer<F, N, G, Trans, Join, Sort>
@@ -123,6 +123,7 @@ impl<F, N, G, Trans, Join, Sort> Analyzer<F, N, G, Trans, Join, Sort>
 where
     F: Fact,
     N: Node,
+    N::NodeId: std::fmt::Debug,
     G: Graph<N>,
     Trans: FnMut(&N, F) -> F,
     Join: FnMut(Vec<F>) -> F,
@@ -135,8 +136,13 @@ where
         self.infos.insert(first, self.first_fact.clone());
 
         // Initialize worklist
-        let mut worklist = VecDeque::new();
+        // We start off with all nodes in the worklist to ensure every node gets
+        // visited, even if the `trans`d fact of a particular node isn't
+        // different from the initial fact.
+        let nodes = graph.get_all_node_ids();
+        let mut worklist = VecDeque::with_capacity(nodes.len());
         worklist.push_back(first);
+        worklist.extend(nodes.iter().skip_while(|n| **n == first));
 
         while let Some(id) = worklist.pop_front() {
             let node = graph.get(id);

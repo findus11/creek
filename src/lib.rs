@@ -8,7 +8,6 @@ pub use problem::{Backward, Forward};
 
 use std::hash::Hash;
 
-
 /// A fact represents a piece of information known to be true at a particular
 /// point in the graph. In a constant propagation problem, for instance, a fact
 /// might be a set of tuples of variables known to be constant and their value
@@ -32,6 +31,9 @@ pub trait Graph<N: Node> {
 
     /// Get the successor nodes for a given node
     fn get_succs(&self, node: N::NodeId) -> &[N::NodeId];
+
+    /// Get all the `NodeId`s in this graph
+    fn get_all_node_ids(&self) -> &[N::NodeId];
 }
 
 /// A node in a directed graph can have predecessors, which are other nodes that

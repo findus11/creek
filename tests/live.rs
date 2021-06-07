@@ -1,6 +1,6 @@
 //! Liveness analysis finds all variables which may be used after a given point.
 //!
-//! Liveness analysis is a forwards problem with these functions
+//! Liveness analysis is a backwards problem with these functions
 //!
 //! ```plain
 //! trans(b) = union(gen(b), in(b) - kill(b))

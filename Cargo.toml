@@ -1,6 +1,6 @@
 [package]
 name = "creek"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["findus11 <findusxi@protonmail.com>"]
 license-file = "LICENSE"
 edition = "2018"

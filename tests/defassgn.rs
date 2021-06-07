@@ -142,3 +142,75 @@ fn one_branch() {
 
     assert_eq!(expected, res);
 }
+
+/// ```plain
+/// +-1-----+
+/// | var a |
+/// +-------+
+///     |
+///     v
+/// +-2-----+
+/// | a = 0 |<-+
+/// +-------+  |
+///   |   |    |
+///   |   +----+
+///   v
+/// +-3-----+
+/// | b = a |
+/// +-------+
+///
+/// in(1)  = {}
+/// out(1) = {a}
+/// in(2)  = {a}
+/// out(2) = {}
+/// in(3)  = {}
+/// out(3) = {}
+/// ```
+#[test]
+fn one_loop() {
+    // Build blocks
+    let mut graph = NodeGraph::new(block! {
+        1;
+        from => ;
+        to => 2;
+        (var 0)
+    });
+
+    graph.insert(block! {
+        2;
+        from => 1, 2;
+        to => 2, 3;
+        (0 = 0)
+    });
+
+    graph.insert_exit(block! {
+        3;
+        from => 2;
+        to => ;
+        (1 = var 0)
+    });
+
+    // Analyze
+    let top = AssignmentFact::new(set![]);
+
+    let mut analyzer = Analyzer::new_forward(top, trans, join);
+    let res = analyzer.solve(&graph);
+
+    // Compare
+    let expected = dict![
+        BlockId(1) => NodeInfo {
+            before: AssignmentFact::new(set![]),
+            after: AssignmentFact::new(set![Variable(0)]),
+        },
+        BlockId(2) => NodeInfo {
+            before: AssignmentFact::new(set![Variable(0)]),
+            after: AssignmentFact::new(set![]),
+        },
+        BlockId(3) => NodeInfo {
+            before: AssignmentFact::new(set![]),
+            after: AssignmentFact::new(set![]),
+        }
+    ];
+
+    assert_eq!(expected, res);
+}
